@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: a9f8fa54e238
+Revision ID: 44f5651376d4
 Revises: 
-Create Date: 2021-12-21 15:36:00.940716
+Create Date: 2021-12-21 22:29:16.559335
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'a9f8fa54e238'
+revision = '44f5651376d4'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -25,6 +25,7 @@ def upgrade():
     sa.Column('salt', sa.String(length=16), nullable=False),
     sa.Column('status', sa.Boolean(), nullable=False),
     sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('name'),
     sa.UniqueConstraint('name')
     )
     op.create_table('house',
@@ -58,6 +59,8 @@ def upgrade():
     sa.Column('instruments', sa.String(length=50), nullable=False),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('name'),
+    sa.UniqueConstraint('name'),
+    sa.UniqueConstraint('slug'),
     sa.UniqueConstraint('slug')
     )
     op.create_table('house_image',
@@ -80,6 +83,8 @@ def upgrade():
     sa.ForeignKeyConstraint(['house_id'], ['house.id'], ),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('name'),
+    sa.UniqueConstraint('name'),
+    sa.UniqueConstraint('slug'),
     sa.UniqueConstraint('slug')
     )
     op.create_table('booking_order',
@@ -90,6 +95,8 @@ def upgrade():
     sa.Column('tennant_name', sa.String(length=50), nullable=False),
     sa.Column('tennant_number', sa.String(length=50), nullable=False),
     sa.Column('room_id', sa.Integer(), nullable=True),
+    sa.Column('house_id', sa.Integer(), nullable=True),
+    sa.ForeignKeyConstraint(['house_id'], ['house.id'], ),
     sa.ForeignKeyConstraint(['room_id'], ['room.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
