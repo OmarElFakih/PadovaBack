@@ -46,6 +46,7 @@ class House(db.Model):
     instruments = db.Column(db.String(50), nullable=False)
     rooms = db.relationship("Room", backref="House", foreign_keys="Room.house_id")
     images = db.relationship("houseImage", backref="House", foreign_keys="houseImage.house_id")
+    bookings = db.relationship("Booking_order", backref="House", foreign_keys="Booking_order.house_id")
 
     def __init__(self, name, slug, size, featured, description, short_description, location, balcony_terrace, garden, kitchen, pets, parking, wheelchair, basement, dishwasher, washing_machine, dryer, ac, heating, wifi, students, working_proffesionals, couples, male, female, smoking, instruments):
         self.name = name
@@ -217,16 +218,19 @@ class Room(db.Model):
 class houseImage(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     url = db.Column(db.String(100), nullable=False)
+    cloud_id = db.Column(db.String(100), nullable=False)
     house_id = db.Column(db.Integer, db.ForeignKey("house.id"))
 
-    def __init__(self, url, house_id):
+    def __init__(self, url, cloud_id, house_id):
         self.url = url
+        self.cloud_id = cloud_id
         self.house_id = house_id
 
     @classmethod
-    def add_house_image(cls, url, house_id):
+    def add_house_image(cls, url, cloud_id, house_id):
         new_house_image = cls(
             url,
+            cloud_id,
             house_id
         )
 
@@ -236,6 +240,7 @@ class houseImage(db.Model):
         return{
             'id': self.id,
             'url': self.url,
+            'cloudId': self.cloud_id,
             'houseId': self.house_id
         }
         
@@ -245,16 +250,19 @@ class houseImage(db.Model):
 class roomImage(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     url = db.Column(db.String(100), nullable=False)
+    cloud_id = db.Column(db.String(100), nullable=False)
     room_id = db.Column(db.Integer, db.ForeignKey("room.id"))
 
-    def __init__(self, url, room_id):
+    def __init__(self, url, cloud_id, room_id):
         self.url = url
-        self.house_id = room_id
+        self.cloud_id = cloud_id
+        self.room_id = room_id
 
     @classmethod
-    def add_room_image(cls, url, room_id):
+    def add_room_image(cls, url, cloud_id, room_id):
         new_room_image = cls(
             url,
+            cloud_id,
             room_id
         )
 
@@ -265,6 +273,7 @@ class roomImage(db.Model):
         return {
             'id': self.id,
             'url': self.url,
+            'cloudId': self.cloud_id,
             'roomId': self.room_id
         }
 
@@ -279,25 +288,28 @@ class Booking_order(db.Model):
     tennant_name = db.Column(db.String(50), nullable=False)
     tennant_number = db.Column(db.String(50), nullable=False)
     room_id = db.Column(db.Integer, db.ForeignKey("room.id"))
+    house_id = db.Column(db.Integer, db.ForeignKey("house.id"))
 
 
-    def __init__(self, check_in_date, check_out_date, tennant_email, tennant_name, tennant_number, room_id): 
+    def __init__(self, check_in_date, check_out_date, tennant_email, tennant_name, tennant_number, room_id, house_id): 
        self.check_in_date = datetime.strptime(check_in_date, '%Y-%m-%d')
        self.check_out_date = datetime.strptime(check_out_date, '%Y-%m-%d')
        self.tennant_email = tennant_email
        self.tennant_name = tennant_name
        self.tennant_number = tennant_number
        self.room_id = room_id
+       self.house_id = house_id
 
     @classmethod
-    def add_order(cls, check_in_date, check_out_date, tennant_email, tennant_name, tennant_number, room_id):
+    def add_order(cls, check_in_date, check_out_date, tennant_email, tennant_name, tennant_number, room_id, house_id):
         new_order = cls(
         check_in_date, 
         check_out_date, 
         tennant_email, 
         tennant_name, 
         tennant_number, 
-        room_id)
+        room_id,
+        house_id)
 
         return new_order
 
@@ -309,7 +321,8 @@ class Booking_order(db.Model):
             'tennantEmail': self.tennant_email, 
             'tennantName': self.tennant_name, 
             'tennantNumber': self.tennant_number, 
-            'roomId': self.room_id
+            'roomId': self.room_id,
+            'houseId': self.house_id
 
         }
     

@@ -49,7 +49,8 @@ def add_booking():
         body["email"],
         body["name"],
         body["number"],
-        body["roomId"]
+        body["roomId"],
+        body["houseId"]
     )
 
     db.session.add(newBooking)
@@ -144,6 +145,7 @@ def add_himg():
     body = request.json
     new_himage = houseImage.add_house_image(
         body["url"],
+        body["cloudId"],
         body["houseId"]
     )
     db.session.add(new_himage)
@@ -164,6 +166,7 @@ def add_rimg():
     body = request.json
     new_rimage = roomImage.add_room_image(
         body["url"],
+        body["cloudId"],
         body["roomId"]
     )
 
@@ -242,6 +245,82 @@ def update_room(room_id):
         }), 500
 
 
+@app.route('/deleteHouseImg/<id>', methods=['PATCH'])
+def deleteHouseImg(id):
+    img = houseImage.query.get(id)
+    db.session.delete(img)
+
+    try:
+        db.session.commit()
+        return "image deleted", 200
+    except Exception as error:
+        db.session.rollback()
+        print(f"{error.args} {type(error)}")
+        return "error deleting image" , 500
+
+@app.route('/deleteRoomImg/<id>', methods=['PATCH'])
+def deleteRoomImg(id):
+    img = roomImage.query.get(id)
+    db.session.delete(img)
+
+    try:
+        db.session.commit()
+        return "image deleted", 200
+    except Exception as error:
+        db.session.rollback()
+        print(f"{error.args} {type(error)}")
+        return "error deleting image" , 500
+
+@app.route('/deleteHouse/<id>', methods=['PATCH'])
+def deleteHouse(id):
+    house = House.query.get(id)
+    img_delete_q = houseImage.__table__.delete().where(houseImage.house_id == id)
+    room_delete_q = Room.__table__.delete().where(Room.house_id == id)
+    booking_delete_q = Booking_order.__table__.delete().where(Booking_order.house_id == id)
+    db.session.execute(img_delete_q)
+    db.session.execute(room_delete_q)
+    db.session.execute(booking_delete_q)
+    db.session.delete(house)
+
+    try:
+        db.session.commit()
+        return "house deleted", 200
+    except Exception as error:
+        db.session.rollback()
+        print(f"{error.args} {type(error)}")
+        return "error deleting house" , 500
+
+
+
+@app.route('/deleteRoom/<id>', methods=['PATCH'])
+def deleteRoom(id):
+    room = Room.query.get(id)
+    img_delete_q = roomImage.__table__.delete().where(roomImage.room_id == id)
+    booking_delete_q = Booking_order.__table__.delete().where(Booking_order.room_id == id)
+    db.session.execute(img_delete_q) 
+    db.session.execute(booking_delete_q)
+    db.session.delete(room)
+
+    try:
+        db.session.commit()
+        return "room deleted", 200
+    except Exception as error:
+        db.session.rollback()
+        print(f"{error.args} {type(error)}")
+        return "error deleting room" , 500   
+
+@app.route('/deleteBooking/<id>', methods=['PATCH'])
+def deleteBooking(id):
+    booking = Booking_order.query.get(id)
+    db.session.delete(booking)
+
+    try:
+        db.session.commit()
+        return "Booking deleted", 200
+    except Exception as error:
+        db.session.rollback()
+        print(f"{error.args} {type(error)}")
+        return "error deleting booking" , 500
 
 # this only runs if `$ python src/main.py` is executed
 if __name__ == '__main__':
